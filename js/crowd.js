@@ -129,9 +129,12 @@ export function drawFigure(ctx, x, y, c, shown, alpha = 1) {
 }
 
 export class Crowd {
-  constructor(canvas, onPick) {
+  // opts.snap: 私から描画用の状態を作る / opts.draw: 一人を描く(別のゲームで差し替えられる)
+  constructor(canvas, onPick, opts = {}) {
     this.canvas = canvas;
     this.onPick = onPick;
+    this.snap = opts.snap || snap;
+    this.drawOne = opts.draw || drawFigure;
     this.sprites = new Map();
     this.order = [];
     this.floats = [];
@@ -179,7 +182,7 @@ export class Crowd {
       const [x, y] = this.pos(i);
       let sp = this.sprites.get(s.id);
       if (!sp) {
-        sp = { id: s.id, s, x, y, tx: x, ty: y, shown: snap(s), appearAt: 0 };
+        sp = { id: s.id, s, x, y, tx: x, ty: y, shown: this.snap(s), appearAt: 0 };
         this.sprites.set(s.id, sp);
       }
       sp.s = s;
@@ -190,7 +193,7 @@ export class Crowd {
         sp.x = this.width / 2;
         sp.y = this.height / 2;
         sp.appearAt = now + i * 9;
-        sp.shown = snap(s);
+        sp.shown = this.snap(s);
       }
     });
   }
@@ -204,7 +207,7 @@ export class Crowd {
 
   refresh(id) {
     const sp = this.sprites.get(id);
-    if (sp) sp.shown = snap(sp.s);
+    if (sp) sp.shown = this.snap(sp.s);
   }
 
   float(id, text, color, big = false, stack = 0) {
@@ -230,7 +233,7 @@ export class Crowd {
     const from = fromId != null ? this.sprites.get(fromId) : null;
     const x = from ? from.x : this.width / 2;
     const y = from ? from.y : this.height / 2;
-    const sp = { id, s, x, y, tx: x, ty: y, shown: snap(s), appearAt: 0, bornAt: performance.now() };
+    const sp = { id, s, x, y, tx: x, ty: y, shown: this.snap(s), appearAt: 0, bornAt: performance.now() };
     this.sprites.set(id, sp);
     this.ring(id, 'rgba(236,228,207,0.8)');
   }
@@ -292,7 +295,7 @@ export class Crowd {
       if (sp.dieAt) a = 1 - clamp((now - sp.dieAt) / 800, 0, 1);
       if (this.dim && sp.id !== this.highlight) a *= 1 - this.dim * 0.8;
       if (scale <= 0.01 || a <= 0.01) continue;
-      drawFigure(ctx, sp.x, sp.y, c * scale, sp.shown, a);
+      this.drawOne(ctx, sp.x, sp.y, c * scale, sp.shown, a);
       if (sp.id === this.selected) {
         ctx.strokeStyle = 'rgba(236,228,207,0.9)';
         ctx.lineWidth = 1.5;
@@ -334,9 +337,11 @@ export class Crowd {
 
 // 並び順の帯。棒の高さが財産、仕切りで道を分ける。
 export class Strip {
-  constructor(canvas, onChange) {
+  // opts.value: 棒の高さに使う値
+  constructor(canvas, onChange, opts = {}) {
     this.canvas = canvas;
     this.onChange = onChange;
+    this.value = opts.value || worth;
     this.list = [];
     this.cuts = [];
     this.locked = false;
@@ -409,7 +414,7 @@ export class Strip {
     if (!n) return;
     const top = 18, base = H - 16;
     const bw = W / n;
-    const maxW = Math.max(1, ...this.list.map((s) => worth(s)));
+    const maxW = Math.max(1, ...this.list.map((s) => this.value(s)));
     const bounds = [0, ...this.cuts.map((f) => Math.round(f * n)), n];
     for (let p = 0; p < bounds.length - 1; p++) {
       const a = bounds[p], b = bounds[p + 1];
@@ -423,7 +428,7 @@ export class Strip {
       ctx.fillText(String(b - a), ((a + b) / 2) * bw, 12);
       ctx.globalAlpha = 1;
       for (let i = a; i < b; i++) {
-        const w = worth(this.list[i]);
+        const w = this.value(this.list[i]);
         const h = w > 0 ? 3 + (base - top - 3) * Math.sqrt(w / maxW) : 1.5;
         ctx.fillStyle = PATH_COLORS[p];
         ctx.fillRect(i * bw + (bw > 3 ? 0.5 : 0), base - h, Math.max(0.8, bw - (bw > 3 ? 1 : 0)), h);

@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>百人の迷宮</title>
+  <meta name="description" content="百人の冒険者を率いて十の層を下り、迷宮の主を討つ。">
+  <meta name="theme-color" content="#16120f">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Yuji+Syuku&family=Zen+Old+Mincho:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="dungeon.css">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2316120f'/%3E%3Cpath d='M32 8 L36 30 L32 56 L28 30 Z' fill='%23f2a64a'/%3E%3C/svg%3E">
+</head>
+<body class="dungeon">
+  <div id="app">
+    <header id="hud" hidden>
+      <div class="hud-l">
+        <span id="hud-floor"></span>
+        <span id="hud-room"></span>
+      </div>
+      <div class="hud-r">
+        <span id="hud-pop" class="hud-num"></span>
+        <span id="hud-grace" class="hud-num"></span>
+        <button id="mute" class="icon-btn" aria-label="音">♪</button>
+      </div>
+    </header>
+
+    <section id="title" class="screen">
+      <div class="title-wrap">
+        <p class="title-sub">百人隊</p>
+        <h1 class="title-main">百人の迷宮</h1>
+        <p class="title-tag">十の層を越え、迷宮の主を討て。</p>
+        <canvas id="title-canvas" width="120" height="120" aria-hidden="true"></canvas>
+        <div class="title-actions">
+          <button id="btn-continue" class="btn primary" hidden>続きから</button>
+          <button id="btn-new" class="btn primary">挑む</button>
+        </div>
+        <div id="title-records" class="records"></div>
+        <div id="title-codex" class="codex"></div>
+        <a class="crosslink" href="../">百人の私 へ</a>
+      </div>
+    </section>
+
+    <section id="floor" class="screen" hidden>
+      <div id="banner">
+        <div id="lore"></div>
+        <div id="mod-text"></div>
+        <div id="ticker" aria-live="polite"></div>
+      </div>
+      <div id="crowd-wrap">
+        <canvas id="crowd"></canvas>
+      </div>
+      <div id="strip-wrap">
+        <canvas id="strip"></canvas>
+        <button id="sort" class="chip">並び：戦力</button>
+      </div>
+      <div id="paths"></div>
+      <div id="boss" hidden></div>
+      <div class="actions">
+        <button id="btn-alt" class="btn ghost" hidden></button>
+        <button id="btn-go" class="btn primary">進む</button>
+      </div>
+    </section>
+
+    <div id="overlay" hidden>
+      <div id="sheet" role="dialog" aria-modal="true"></div>
+    </div>
+    <div id="curtain" hidden><div id="curtain-text"></div></div>
+  </div>
+  <script type="module" src="js/dmain.js"></script>
+</body>
+</html>
