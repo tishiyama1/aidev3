@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>百人の私</title>
+  <meta name="description" content="眠るたびに百人に分かれる。目覚めるとき、生き残った誰か一人が本当の私になる。">
+  <meta name="theme-color" content="#121327">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Yuji+Syuku&family=Zen+Old+Mincho:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23121327'/%3E%3Ccircle cx='32' cy='22' r='8' fill='%23f0c75e'/%3E%3Cpath d='M20 52 L26 33 H38 L44 52 Z' fill='%23f0c75e'/%3E%3C/svg%3E">
+</head>
+<body>
+  <div id="app">
+    <header id="hud" hidden>
+      <div class="hud-l">
+        <span id="hud-night"></span>
+        <span id="hud-stage"></span>
+      </div>
+      <div class="hud-r">
+        <span id="hud-alive" class="hud-num"></span>
+        <span id="hud-savings" class="hud-num"></span>
+        <button id="mute" class="icon-btn" aria-label="音">♪</button>
+      </div>
+    </header>
+
+    <section id="title" class="screen">
+      <div class="title-wrap">
+        <p class="title-sub">夢十夜</p>
+        <h1 class="title-main">百人の私</h1>
+        <canvas id="title-canvas" width="120" height="120" aria-hidden="true"></canvas>
+        <div class="title-actions">
+          <button id="btn-continue" class="btn primary" hidden>続きを眠る</button>
+          <button id="btn-new" class="btn primary">眠る</button>
+        </div>
+        <div id="title-records" class="records"></div>
+        <div id="title-codex" class="codex"></div>
+      </div>
+    </section>
+
+    <section id="night" class="screen" hidden>
+      <div id="banner">
+        <div id="mod-text"></div>
+        <div id="ticker" aria-live="polite"></div>
+      </div>
+      <div id="crowd-wrap">
+        <canvas id="crowd"></canvas>
+      </div>
+      <div id="strip-wrap">
+        <canvas id="strip"></canvas>
+        <button id="sort" class="chip">並び：金</button>
+      </div>
+      <div id="paths"></div>
+      <div class="actions">
+        <button id="btn-wake" class="btn ghost">目覚める</button>
+        <button id="btn-go" class="btn primary">進む</button>
+      </div>
+    </section>
+
+    <div id="overlay" hidden>
+      <div id="sheet" role="dialog" aria-modal="true"></div>
+    </div>
+    <div id="curtain" hidden><div id="curtain-text"></div></div>
+  </div>
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
