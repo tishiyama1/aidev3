@@ -26,6 +26,8 @@ let run = null;
 let cuts = [];
 let sortMode = 'gold';
 let busy = false;
+// 結果を見せている間は次の場面へ進む前の一呼吸。'next' か 'wake'
+let pending = null;
 
 const crowd = new Crowd($('crowd'), (s) => { if (!busy) inspect(s); });
 const strip = new Strip($('strip'), (c) => { cuts = c; updateAssign(); });
@@ -162,6 +164,7 @@ async function enterNight() {
   $('mute').classList.toggle('off', store.muted);
   setMuted(store.muted);
   cuts = [];
+  pending = null;
   ticker('');
   crowd.assign = new Map();
   crowd.highlight = null;
@@ -183,6 +186,8 @@ function hud() {
   $('hud-night').textContent = `第${kanji(run.night)}夜`;
   $('hud-stage').textContent = !run.inNight ? '' : run.atDawn() ? '夜明け' : `${run.stageLabel()} ／ ${kanji(run.stageCount)}`;
   $('hud-alive').textContent = run.population();
+  const alive = run.selves.filter((s) => s.alive);
+  $('hud-avg').textContent = alive.length ? `${fmt(alive.reduce((a, s) => a + worth(s), 0) / alive.length)}文` : '—';
   $('hud-savings').textContent = `${fmt(run.savings)}文`;
 }
 
@@ -195,6 +200,7 @@ function seenText(id) {
 }
 
 function renderStage() {
+  $('strip-wrap').hidden = false;
   hud();
   const mod = run.stage?.mod ? MODS[run.stage.mod] : null;
   $('mod-text').textContent = mod ? mod.text : '';
@@ -353,28 +359,74 @@ async function playReport(rep) {
   if (!notes.length || notes[notes.length - 1].level < 3) ticker(sum, 1);
 }
 
+const FORM_DONE = { human: '人に戻った', cat: '猫になった', bird: '鳥になった', stone: '石になった' };
+
+function resultLines(sum) {
+  if (!sum.sent) return [['quiet', '誰も行かなかった']];
+  const L = [];
+  for (const t of sum.notes) L.push(['note', t]);
+  for (const [cause, n] of Object.entries(sum.died)) L.push(['bad', `${cause} ${n}人`]);
+  if (sum.born) L.push(['good', `${sum.born}人増えた`]);
+  if (sum.gainers) L.push(['gold', `${sum.gainers}人が金を得た(平均 +${fmt(sum.gain / sum.gainers)}文)`]);
+  if (sum.losers) L.push(['bad', `${sum.losers}人が金を失った(平均 −${fmt(sum.loss / sum.losers)}文)`]);
+  for (const [k, n] of Object.entries(sum.items)) L.push([ITEMS[k].kind === 'treasure' ? 'gold' : ITEMS[k].kind === 'curse' ? 'curse' : 'good', `${ITEMS[k].name}を得た ${n}人`]);
+  for (const [k, n] of Object.entries(sum.lost)) L.push(['bad', `${ITEMS[k].name}を失った ${n}人`]);
+  for (const [f, n] of Object.entries(sum.forms)) L.push(['good', `${FORM_DONE[f]} ${n}人`]);
+  for (const [t, n] of Object.entries(sum.quiet).sort((a, b) => b[1] - a[1])) L.push(['quiet', `${t} ${n}人`]);
+  return L;
+}
+
+function showResults(rep) {
+  const paths = $('paths');
+  const hidden = MODS[rep.mod]?.hidden;
+  paths.innerHTML = rep.paths.map((id, i) => {
+    const p = pathById(id);
+    const sum = rep.summaries[i];
+    return `
+      <div class="path result${sum.sent ? '' : ' empty'}" style="--pc:${PATH_COLORS[i]}">
+        <div class="res-head"><span class="glyph">${p.glyph}</span><span class="name">${esc(p.name)}</span></div>
+        <div class="res-count">${sum.sent}<small>人</small> → <b>${sum.alive}</b><small>人</small></div>
+        <ul class="res-lines">${resultLines(sum).map(([c, t]) => `<li class="${c}">${esc(t)}</li>`).join('')}</ul>
+      </div>`;
+  }).join('');
+  if (hidden) ticker('霧が晴れると、そこはこんな道だった', 1);
+  $('strip-wrap').hidden = true;
+  hud();
+}
+
 async function go() {
   if (busy || !run || !run.inNight) return;
   unlock();
+  if (pending) {
+    const next = pending;
+    pending = null;
+    crowd.assign = new Map();
+    if (next === 'wake') { wakeFlow({ alarm: run.population() > 0 }); return; }
+    $('sort').disabled = false;
+    strip.locked = false;
+    renderStage();
+    return;
+  }
   if (run.atDawn()) { dawnFlow(); return; }
   busy = true;
   lock(true);
   sfx.go();
   const keepAssign = crowd.assign;
+  const modBefore = run.stage.mod;
   const rep = run.resolve(cuts, sortMode);
   save();
   crowd.assign = keepAssign;
   $('paths').querySelectorAll('.path').forEach((el) => el.classList.add('fading'));
   await playReport(rep);
-  crowd.assign = new Map();
-  if (!run.population() || rep.alarm) {
-    await sleep(rep.alarm ? 600 : 300);
-    wakeFlow({ alarm: rep.alarm });
-    return;
-  }
-  renderStage();
+  rep.mod = modBefore;
+  showResults(rep);
+  pending = !run.population() || rep.alarm ? 'wake' : 'next';
+  $('btn-go').textContent = pending === 'wake' ? (run.population() ? '目を覚ます' : '……') : '次へ';
+  $('btn-wake').hidden = pending === 'wake';
   busy = false;
   lock(false);
+  $('sort').disabled = true;
+  strip.locked = true;
 }
 
 async function dawnFlow() {
@@ -390,6 +442,7 @@ async function dawnFlow() {
 }
 
 async function wakeFlow(opt) {
+  pending = null;
   busy = true;
   lock(true);
   crowd.assign = new Map();
