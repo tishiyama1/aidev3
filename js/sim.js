@@ -74,7 +74,7 @@ class Ctx {
   }
   push(s, e) { (this.fx[s.id] ||= []).push(e); }
   log(s, text) { s.log.push({ at: this.run.stageIdx, text }); }
-  note(text, level = 1, s = null) { this.notes.push({ text, level, id: s ? s.id : null }); }
+  note(text, level = 1, s = null) { this.notes.push({ text, level, id: s ? s.id : null, path: this.cur }); }
   has(s, k) { return s.items.includes(k); }
   give(s, k) {
     if (ITEMS[k].kind !== 'treasure' && s.items.includes(k)) return false;
@@ -163,6 +163,33 @@ class Ctx {
     this.push(s, { t: 'form', f });
     return true;
   }
+}
+
+// 一つの道へ行った私たちに何が起きたかをまとめる
+function summarize(g, i, ctx, startGold) {
+  const sum = { sent: g.length, alive: 0, died: {}, gainers: 0, gain: 0, losers: 0, loss: 0, items: {}, lost: {}, forms: {}, born: 0, quiet: {} };
+  const inc = (o, k) => { o[k] = (o[k] || 0) + 1; };
+  for (const s of g) {
+    if (!s.alive) { inc(sum.died, s.cause); continue; }
+    sum.alive++;
+    const fx = ctx.fx[s.id] || [];
+    const d = s.gold - startGold.get(s.id);
+    if (d > 0) { sum.gainers++; sum.gain += d; } else if (d < 0) { sum.losers++; sum.loss -= d; }
+    for (const e of fx) {
+      if (e.t === 'item') inc(sum.items, e.k);
+      else if (e.t === 'lose') inc(sum.lost, e.k);
+      else if (e.t === 'form') inc(sum.forms, e.f);
+    }
+    // 何も変わらなかった私は、その場で何をしていたかでまとめる
+    if (!fx.length && d === 0) {
+      const last = s.log[s.log.length - 1];
+      inc(sum.quiet, last && last.at === ctx.run.stageIdx ? last.text : '何も起きなかった');
+    }
+  }
+  sum.born = ctx.newborn.filter((c) => c.from != null && g.some((x) => x.id === c.from) && !g.includes(c)).length;
+  sum.alive += sum.born;
+  sum.notes = ctx.notes.filter((n) => n.path === i).map((n) => n.text);
+  return sum;
 }
 
 export class Run {
@@ -280,8 +307,10 @@ export class Run {
     const groups = this.groupsFor(cuts, mode);
     const ctx = new Ctx(this, groups);
     const perPath = [];
+    const startGold = new Map(groups.flat().map((s) => [s.id, s.gold]));
 
     groups.forEach((g, i) => {
+      ctx.cur = i;
       const before = g.reduce((a, s) => a + worth(s), 0);
       const nb = ctx.newborn.length;
       pathById(this.stage.paths[i]).run(g, ctx);
@@ -304,6 +333,8 @@ export class Run {
         perPath[ti].survived = target.filter((s) => s.alive).length;
       }
     }
+    ctx.cur = null;
+    const summaries = groups.map((g, i) => summarize(g, i, ctx, startGold));
 
     // 石になった私は時々もとに戻る。
     for (const s of this.selves) {
@@ -329,6 +360,7 @@ export class Run {
       paths: this.stage.paths,
       groups: groups.map((g) => g.map((s) => s.id)),
       perPath,
+      summaries,
       fx: ctx.fx,
       notes: ctx.notes,
       wolves,
