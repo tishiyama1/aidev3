@@ -256,3 +256,6 @@ button { font-family: inherit; color: inherit; cursor: pointer; }
   .res-lines { font-size: 11.5px; }
   .hud-l, .hud-r { gap: 8px; }
 }
+
+.crosslink { color: var(--faint); font-size: 13px; text-decoration: none; margin-top: 6px; }
+.crosslink:hover { color: var(--dim); }

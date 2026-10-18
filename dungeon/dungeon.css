@@ -1,0 +1,83 @@
+/* 百人の迷宮:石と松明の色。共通の部品は ../css/style.css を使う */
+body.dungeon {
+  --bg: #16120f;
+  --bg2: #221c17;
+  --bg3: #2e261f;
+  --line: #3d3329;
+  --paper: #efe3cc;
+  --dim: #a8987f;
+  --faint: #6c5f50;
+  --gold: #f2a64a;
+  --blood: #cf5a4e;
+  background:
+    radial-gradient(ellipse at 50% -10%, #3a2a1c 0%, transparent 60%),
+    radial-gradient(ellipse at 15% 110%, #2a1d16 0%, transparent 55%),
+    var(--bg);
+  background-attachment: fixed;
+}
+
+#hud-pop::before { content: '隊 '; color: var(--dim); font-size: 12px; }
+#hud-grace { color: var(--gold); }
+#hud-grace::before { content: '加護 '; color: var(--dim); font-size: 12px; }
+
+#lore { font-size: 13px; color: var(--dim); letter-spacing: 0.05em; min-height: 1.2em; }
+#lore b { color: var(--paper); font-weight: 400; }
+#mod-text { color: #e0a070; }
+
+.path .est { font-size: 12px; color: var(--dim); font-variant-numeric: tabular-nums; }
+.path .est b { color: var(--paper); font-size: 15px; }
+.path .est.unknown { color: var(--faint); }
+.path .est.risky b { color: #e58a7a; }
+
+.actions .btn.ghost.grace { color: var(--gold); border-color: rgba(242, 166, 74, 0.5); }
+
+/* 野営 */
+.camp-sec { margin: 14px 0; }
+.camp-sec h3 { margin: 0 0 6px; font-size: 13px; color: var(--dim); font-weight: 400; letter-spacing: 0.1em; }
+.stash { display: flex; flex-wrap: wrap; gap: 6px; }
+.stash button, .gearchip {
+  border: 1px solid var(--line); background: var(--bg3); border-radius: 999px; padding: 3px 10px 3px 6px;
+  font-size: 13px; display: inline-flex; align-items: center; gap: 4px;
+}
+.stash button b, .gearchip b { font-family: var(--brush); font-weight: 400; color: var(--gold); }
+.stash button.sel { border-color: var(--gold); box-shadow: 0 0 10px rgba(242, 166, 74, 0.3); }
+.roster { display: flex; flex-direction: column; gap: 4px; max-height: 260px; overflow-y: auto; }
+.roster button {
+  display: grid; grid-template-columns: 52px 1fr auto; gap: 8px; align-items: center; text-align: left;
+  border: 1px solid var(--line); background: var(--bg3); border-radius: 10px; padding: 6px 10px; font-size: 13px;
+}
+.roster button .rid { font-family: var(--brush); font-size: 18px; }
+.roster button .rgear { color: var(--dim); font-size: 12px; }
+.roster button .rodds { color: var(--gold); font-variant-numeric: tabular-nums; font-size: 12px; }
+.camp-actions { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.camp-actions button {
+  border: 1px solid var(--line); background: var(--bg3); border-radius: 12px; padding: 10px 4px;
+  display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 13px;
+}
+.camp-actions button b { font-family: var(--brush); font-weight: 400; font-size: 24px; }
+.camp-actions button.on { border-color: var(--gold); color: var(--gold); }
+.camp-actions button:disabled { opacity: 0.35; }
+.odds { display: flex; flex-wrap: wrap; gap: 6px 12px; font-size: 13px; font-variant-numeric: tabular-nums; }
+.odds span b { color: var(--gold); font-weight: 400; }
+
+/* 決戦 */
+#boss { margin-top: 8px; display: flex; flex-direction: column; gap: 10px; }
+.boss-head { display: flex; align-items: center; gap: 12px; }
+.boss-glyph {
+  font-family: var(--brush); font-size: 46px; width: 72px; height: 72px; display: grid; place-items: center;
+  border-radius: 50%; border: 1px solid var(--blood); color: var(--blood); flex: none;
+}
+.boss-name { font-size: 20px; font-weight: 700; letter-spacing: 0.08em; }
+.boss-traits { font-size: 12.5px; color: var(--dim); }
+.hpbar { height: 10px; border-radius: 5px; background: var(--bg3); overflow: hidden; border: 1px solid var(--line); }
+.hpbar div { height: 100%; background: linear-gradient(90deg, #8f2f28, var(--blood)); transition: width 0.6s ease; }
+.hpbar.ready div { background: linear-gradient(90deg, #b8782f, var(--gold)); }
+.tell { color: #e0a070; font-size: 14px; min-height: 1.3em; }
+.stances { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.stances button {
+  border: 1px solid var(--line); background: var(--bg2); border-radius: 12px; padding: 10px 4px;
+  display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 13px;
+}
+.stances button b { font-family: var(--brush); font-weight: 400; font-size: 26px; }
+.stances button:disabled { opacity: 0.35; }
+.stances .s-grace b { color: var(--gold); }
