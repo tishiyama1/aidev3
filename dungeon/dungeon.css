@@ -394,4 +394,5 @@ body.reduced *, body.reduced *::before, body.reduced *::after { animation-durati
   #title-panel { justify-content: center; }
   .camp-grid { grid-template-columns: 1fr; }
   .plaque .p-text { display: block; }
+  #title-mark h1 { font-size: 64px; white-space: nowrap; }
 }

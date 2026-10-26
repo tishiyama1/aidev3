@@ -53,7 +53,7 @@ export class Stage {
     // 横長の画面では舞台を左に置くので、高さは画面いっぱいまで使う
     const wide = window.innerWidth >= 1000 && window.innerWidth / window.innerHeight >= 1.25;
     const h = wide
-      ? Math.round(clamp(Math.min(w * 0.75, window.innerHeight - 120), 360, 760))
+      ? Math.round(clamp(Math.min(w * 0.62, window.innerHeight - 120), 360, 680))
       : Math.round(clamp(Math.min(w * 0.8, window.innerHeight * 0.5), 280, 520));
     if (w === this.W && h === this.H) return;
     this.W = w;
@@ -64,13 +64,13 @@ export class Stage {
     this.relayout(true);
   }
   get horizon() { return this.H * 0.6; }
-  get fs() { return clamp(this.W / 22, 15, 26); }
+  get fs() { return clamp(this.W / 22, 15, 34); }
 
   doorGeom(i) {
     const k = this.doors.length || 1;
     const col = this.W / k;
     // 上端の主の情報の帯(約40px)に要石がかからない大きさにする
-    const w = Math.min(col * 0.5, 118, (this.horizon - 44) / 1.85);
+    const w = Math.min(col * 0.5, 170, (this.horizon - 44) / 1.85);
     return { x: (i + 0.5) * col, y: this.horizon + 2, w, h: w * 1.45, col };
   }
 
@@ -175,6 +175,9 @@ export class Stage {
   wait(ms) { return new Promise((r) => setTimeout(r, ms * this.speed)); }
 
   float(id, text, color, big = false) {
+    // 一度に浮かぶ文字が多すぎると読めないので、大事なもの以外は間引く
+    const live = this.floats.filter((q) => performance.now() - q.t0 < q.dur).length;
+    if (live > 14 && !big) return;
     const f = this.figs.get(id);
     const x = f ? f.x : this.W / 2;
     const y = f ? f.y - this.fs * 1.4 : this.H / 2;

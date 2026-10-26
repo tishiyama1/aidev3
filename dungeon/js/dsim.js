@@ -183,7 +183,7 @@ class Ctx {
         const mvp = alive.reduce((b, a) => (atk(a) * (0.5 + this.r()) > atk(b) * (0.5 + this.r()) ? a : b));
         this.fame(mvp, 3);
         mvp.kills++;
-        this.log(mvp, 'とどめを刺した');
+        this.log(mvp, `${this.room.name}でとどめを刺した`);
       }
     }
   }
@@ -279,7 +279,7 @@ const RUNNERS = {
   },
   training(c) {
     for (const a of c.group) {
-      if (levelOf(a) >= 3) { c.sum.quiet++; c.log(a, '訓練場では学ぶことがなかった'); continue; }
+      if (levelOf(a) >= 3) { c.sum.quiet++; continue; }
       const cat = CAT_KEYS.reduce((b, k) => ((a.xp[k] || 0) < (a.xp[b] || 0) ? k : b), CAT_KEYS[0]);
       c.gainXp(a, cat);
       if (c.r() < 0.03) { c.wound(a); c.log(a, '訓練で怪我をした'); }

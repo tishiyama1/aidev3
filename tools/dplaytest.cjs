@@ -20,7 +20,8 @@ require('fs').mkdirSync(out, { recursive: true });
   const shot = {};
   const snap = async (name) => { if (!shot[name]) { shot[name] = 1; await page.waitForTimeout(250); await page.screenshot({ path: `${out}/${name}.png` }); } };
   const vis = (sel) => page.locator(sel).first().isVisible().catch(() => false);
-  const enabled = (sel) => page.locator(sel).first().isEnabled().catch(() => false);
+  // 要素がないときに待たないよう、先に数を確かめる
+  const enabled = async (sel) => (await page.locator(sel).count()) > 0 && page.locator(sel).first().isEnabled({ timeout: 500 }).catch(() => false);
   let rooms = 0;
   for (let i = 0; i < 4000; i++) {
     if (await vis('#end-again')) break;
