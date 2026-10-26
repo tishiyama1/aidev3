@@ -11,9 +11,15 @@
 
 - `dungeon/js/ddata.js`:部屋・装備・覚醒・迷宮の主・層の異変
 - `dungeon/js/dsim.js`:ゲームの中身(DOM に依存しない)
-- `dungeon/js/dmain.js`:画面と演出(群衆の描画と効果音は `js/` のものを共用)
+- `dungeon/js/names.js`:冒険者の名前と外見
+- `dungeon/js/art.js` / `stage.js`:Canvas で描く人物・石室・扉・主と、舞台の演出
+- `dungeon/js/ruler.js`:隊列の物差し
+- `dungeon/js/sound.js`:Web Audio で合成する環境音・音楽・効果音
+- `dungeon/js/dmain.js`:画面の流れ、野営、決戦、手記、設定
 - `tools/dbalance.mjs`:戦略ボットで勝率を測る
-- `tools/dplaytest.cjs`:Playwright で最後まで通す
+- `tools/dplaytest.cjs`:Playwright で最後まで通す(`STRAT=safe` で見込みを読んで遊ぶ)
+
+正式版の設計と検証の記録は `docs/dungeon-release.md` にあります。
 
 ## 遊ぶ
 
