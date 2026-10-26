@@ -4,70 +4,74 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>百人の迷宮</title>
-  <meta name="description" content="百人の冒険者を率いて十の層を下り、迷宮の主を討つ。">
-  <meta name="theme-color" content="#16120f">
+  <meta name="description" content="百人の冒険者を率いて十の層を下り、迷宮の主を討つ。序盤は運に振り回され、終盤は運を飼い慣らす指揮官のゲーム。">
+  <meta name="theme-color" content="#0d0b09">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Yuji+Syuku&family=Zen+Old+Mincho:wght@400;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../css/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Yuji+Syuku&family=Zen+Old+Mincho:wght@400;700;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="dungeon.css">
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2316120f'/%3E%3Cpath d='M32 8 L36 30 L32 56 L28 30 Z' fill='%23f2a64a'/%3E%3C/svg%3E">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%230d0b09'/%3E%3Cpath d='M14 58V30a18 18 0 0 1 36 0v28' fill='none' stroke='%23c8a060' stroke-width='5'/%3E%3Cpath d='M32 14c4 6 6 9 6 13a6 6 0 0 1-12 0c0-4 2-7 6-13z' fill='%23f2a64a'/%3E%3C/svg%3E">
 </head>
-<body class="dungeon">
-  <div id="app">
+<body>
+  <div id="app" class="is-title">
     <header id="hud" hidden>
-      <div class="hud-l">
-        <span id="hud-floor"></span>
-        <span id="hud-room"></span>
+      <ol id="depth" aria-label="深さ"></ol>
+      <div class="hud-mid">
+        <div id="hud-floor"></div>
+        <div id="hud-room"></div>
       </div>
       <div class="hud-r">
-        <span id="hud-pop" class="hud-num"></span>
-        <span id="hud-grace" class="hud-num"></span>
-        <button id="mute" class="icon-btn" aria-label="音">♪</button>
+        <div class="stat" title="隊の人数"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="4.5" r="2.6"/><path d="M3.5 15l1.2-6.5h6.6l1.2 6.5z"/></svg><b id="hud-pop">0</b></div>
+        <div class="stat grace" title="加護"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1c2.2 3.2 3.4 5.2 3.4 7.4a3.4 3.4 0 0 1-6.8 0C4.6 6.2 5.8 4.2 8 1z"/></svg><b id="hud-grace">0</b></div>
+        <button id="btn-menu" class="icon-btn" aria-label="メニュー"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 5h14M3 10h14M3 15h14"/></svg></button>
       </div>
     </header>
 
-    <section id="title" class="screen">
-      <div class="title-wrap">
-        <p class="title-sub">百人隊</p>
-        <h1 class="title-main">百人の迷宮</h1>
-        <p class="title-tag">十の層を越え、迷宮の主を討て。</p>
-        <canvas id="title-canvas" width="120" height="120" aria-hidden="true"></canvas>
-        <div class="title-actions">
-          <button id="btn-continue" class="btn primary" hidden>続きから</button>
-          <button id="btn-new" class="btn primary">挑む</button>
+    <div id="stage-wrap">
+      <canvas id="stage" aria-label="迷宮の様子"></canvas>
+      <div id="lore" aria-live="polite"></div>
+      <div id="ticker" aria-live="polite"></div>
+    </div>
+
+    <section id="title-panel" class="panel">
+      <div id="title-mark">
+        <p class="kicker">百人隊</p>
+        <h1>百人の迷宮</h1>
+        <p class="tagline">十の層を越え、迷宮の主を討て。</p>
+      </div>
+      <div class="title-actions">
+        <button id="btn-continue" class="btn primary" hidden>遠征を続ける</button>
+        <button id="btn-new" class="btn primary">挑む</button>
+        <div class="title-sub">
+          <button id="btn-book" class="btn quiet">指揮官の手記</button>
+          <button id="btn-settings" class="btn quiet">設定</button>
         </div>
-        <div id="title-records" class="records"></div>
-        <div id="title-codex" class="codex"></div>
-        <a class="crosslink" href="../">百人の私 へ</a>
+      </div>
+      <p id="title-records" class="records"></p>
+      <a class="crosslink" href="../">― 百人の私 へ ―</a>
+    </section>
+
+    <section id="room-panel" class="panel" hidden>
+      <div class="ruler-head">
+        <span class="label">隊列</span>
+        <button id="sort" class="chip">強い順</button>
+      </div>
+      <div id="ruler-wrap"><canvas id="ruler"></canvas></div>
+      <div id="plaques"></div>
+      <div class="actions">
+        <button id="btn-alt" class="btn ghost" hidden></button>
+        <button id="btn-go" class="btn primary">進め</button>
       </div>
     </section>
 
-    <section id="floor" class="screen" hidden>
-      <div id="banner">
-        <div id="lore"></div>
-        <div id="mod-text"></div>
-        <div id="ticker" aria-live="polite"></div>
-      </div>
-      <div id="crowd-wrap">
-        <canvas id="crowd"></canvas>
-      </div>
-      <div id="strip-wrap">
-        <canvas id="strip"></canvas>
-        <button id="sort" class="chip">並び：戦力</button>
-      </div>
-      <div id="paths"></div>
-      <div id="boss" hidden></div>
-      <div class="actions">
-        <button id="btn-alt" class="btn ghost" hidden></button>
-        <button id="btn-go" class="btn primary">進む</button>
-      </div>
-    </section>
+    <section id="camp-panel" class="panel" hidden></section>
+    <section id="boss-panel" class="panel" hidden></section>
 
     <div id="overlay" hidden>
       <div id="sheet" role="dialog" aria-modal="true"></div>
     </div>
-    <div id="curtain" hidden><div id="curtain-text"></div></div>
+    <div id="coach" hidden></div>
+    <div id="toast" hidden></div>
   </div>
   <script type="module" src="js/dmain.js"></script>
 </body>

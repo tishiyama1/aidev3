@@ -1,5 +1,6 @@
 // 百人の迷宮:ゲームの中身(画面に依存しない)。Node からも読み込んで検証できる。
 import { GEAR, SKILLS, BOSSES, MODS, ROOMS, CATS } from './ddata.js';
+import { nameFor, lookFor } from './names.js';
 
 export const FLOORS = 10;
 export const ROOMS_PER_FLOOR = 3;
@@ -43,7 +44,7 @@ function pickWeighted(rng, list) {
 }
 
 export function newProfile() {
-  return { known: {}, codex: {}, bosses: {}, wins: 0, runs: 0, best: 0 };
+  return { known: {}, codex: {}, bosses: {}, wins: 0, runs: 0, best: 0, seen: {}, heroes: [], fallen: 0, slain: {} };
 }
 
 // ---------- 冒険者の能力 ----------
@@ -101,7 +102,7 @@ class Ctx {
     (this.sum.died[cause] ||= 0);
     this.sum.died[cause]++;
     this.run.onDeath();
-    if (a.fame >= 25 || a.skill) this.note(`${a.skill ? SKILLS[a.skill].name + 'の' : '名高い'} #${a.id} が倒れた`, 2, a);
+    if (a.fame >= 25 || a.skill) this.note(`${a.skill ? SKILLS[a.skill].name + 'の' : '名高い'}${a.name}が倒れた`, 2, a);
   }
   // お守りか守護者がいれば、死の代わりに傷を負う
   doom(a, cause) {
@@ -156,7 +157,7 @@ class Ctx {
     this.log(a, `「${SKILLS[k].name}」に覚醒した`);
     this.push(a, { t: 'awaken', k });
     this.sum.awakened.push(a.id);
-    this.note(`#${a.id} が「${SKILLS[k].name}」に覚醒した`, 3, a);
+    this.note(`${a.name}が「${SKILLS[k].name}」に覚醒した`, 3, a);
     return true;
   }
 
@@ -328,7 +329,15 @@ export class Run {
   constructor(profile, rng = Math.random, data = null) {
     this.profile = profile;
     this.rng = rng;
-    if (data) { Object.assign(this, data); return; }
+    if (data) {
+      Object.assign(this, data);
+      // 名前と外見のない古い保存データにも補う(判定には影響しない)
+      if (!this.seed) this.seed = (Math.random() * 1e9) >>> 0;
+      for (const a of this.advs) if (!a.name) { a.name = nameFor(this.seed, a.id); a.look = lookFor(this.seed, a.id); }
+      return;
+    }
+    // 名前と外見の種。遠征の乱数とは別にして、判定の流れを変えない
+    this.seed = (Math.random() * 1e9) >>> 0;
     this.floor = 1;
     this.roomIdx = 0;
     this.phase = 'room';
@@ -363,8 +372,9 @@ export class Run {
   }
 
   newAdv(t = {}) {
+    const id = this.nextId++;
     return {
-      id: this.nextId++, alive: true, txp: 0, xp: { beast: 0, trap: 0, dark: 0, magic: 0 }, wounds: 0,
+      id, name: nameFor(this.seed, id), look: lookFor(this.seed, id), alive: true, txp: 0, xp: { beast: 0, trap: 0, dark: 0, magic: 0 }, wounds: 0,
       gear: { weapon: null, armor: null, charm: null }, fame: 0, skill: null, kills: 0, log: [], joined: 1, ...t,
     };
   }
@@ -501,7 +511,12 @@ export class Run {
       sum.alive = g.filter((a) => a.alive).length + sum.recruits;
       sum.notes = [];
       summaries.push(sum);
-      if (g.length) this.profile.known[room.id] = true;
+      if (g.length) {
+        this.profile.known[room.id] = true;
+        const seen = ((this.profile.seen ||= {})[room.id] ||= { n: 0, s: 0 });
+        seen.n += g.length;
+        seen.s += g.filter((a) => a.alive).length;
+      }
     });
     void startLv;
     const report = {
@@ -597,7 +612,7 @@ export class Run {
       const before = a.fame;
       a.fame += 30;
       a.log.push({ f: this.floor, r: ROOMS_PER_FLOOR, text: '焚き火の前で皆に称えられた' });
-      out.push(`#${a.id} の名声が ${before} から ${a.fame} になった`);
+      out.push(`${a.name}の名声が ${before} から ${a.fame} になった`);
     }
     this.camped = true;
     return out;
@@ -790,9 +805,14 @@ export class Run {
   finish() {
     const p = this.profile;
     p.runs++;
+    p.fallen = (p.fallen || 0) + this.dead.length;
     if (this.result.win) {
       p.wins++;
       p.best = Math.max(p.best || 0, this.result.survivors);
+      p.slain = p.slain || {};
+      p.slain[this.bossId] = (p.slain[this.bossId] || 0) + 1;
+      const h = this.advs.find((a) => a.id === this.result.hero);
+      p.heroes = [{ name: h.name, id: h.id, skill: h.skill, boss: this.bossId, survivors: this.result.survivors, fame: h.fame, at: Date.now() }, ...(p.heroes || [])].slice(0, 30);
     }
   }
 }
